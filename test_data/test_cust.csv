@@ -1,0 +1,5 @@
+Customer Id,Date Added,First Name,Last Name,Email,Phone,Notes,Birthday,Street,City,State,Zip Code,Country,Emergency Contact,Emergency Phone,Health Status,Referral Source,Do Not Email,Custom Link,Custom ID,Last Attendance,Attendances Count
+1111111,8/1/2024,Test,One,test@test.com,,,,,,,,,,,,,FALSE,,,,
+1234567,8/2/2024,Test,Two,test2@test.com,,,,,,,,,,,,,FALSE,,,,
+5214444,8/1/2024,Test,Test,test0@test.com,,,,,,,,,,,,,TRUE,,,,
+3055541,7/10/2024,Chezka,Sino,chezka@pm.me,,,,,,,,,,,,,FALSE,,,,
