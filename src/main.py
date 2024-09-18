@@ -2,7 +2,6 @@ import pandas as pd
 from datetime import date
 from datetime import timedelta
 from datetime import datetime
-# from sqlalchemy import create_engine, text
 import os
 import json
 from json import loads
@@ -25,7 +24,7 @@ def customers():
         'Do Not Email': 'dne'
     })
 
-    # only for first run. remove test 
+    # only for first run to remove test accounts
     # data = data.drop(data[data['first_name'] == 'Test'].index)
    
     # change to date
@@ -40,12 +39,10 @@ def customers():
     return cust_info
 
 def add_to_customers(supabase):
-    # main_list = []
     customer_list = customers()
     customer_list['created_at'] = pd.to_datetime(customer_list['created_at']).dt.strftime('%Y-%m-%d')
-    cust_json = customer_list.to_json(orient='records')
+    cust_json = loads(customer_list.to_json(orient='records'))
     
-    print(cust_json)
     data = supabase.table('customers').insert(cust_json).execute()
 
 def add_pass(supabase):
