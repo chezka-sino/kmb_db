@@ -2,7 +2,12 @@ import pandas as pd
 from datetime import date
 from datetime import timedelta
 from datetime import datetime
-from sqlalchemy import create_engine
+# from sqlalchemy import create_engine, text
+import os
+import json
+from json import loads
+from dotenv import load_dotenv
+from supabase import create_client, Client
 
 def customers():
     last_pull = datetime.strptime(input('Last pull date: '), '%Y-%m-%d').date()
@@ -21,7 +26,7 @@ def customers():
     })
 
     # only for first run. remove test 
-    data = data.drop(data[data['first_name'] == 'Test'].index)
+    # data = data.drop(data[data['first_name'] == 'Test'].index)
    
     # change to date
     data['created_at'] = pd.to_datetime(data['created_at']).dt.date
@@ -31,12 +36,40 @@ def customers():
 
     # keeping only from date last pulled to yesterday
     cust_info = cust_info[(cust_info['created_at'] >= last_pull) & (cust_info['created_at'] <= yesterday)]
+    
+    return cust_info
 
-    return
+def add_to_customers(supabase):
+    # main_list = []
+    customer_list = customers()
+    customer_list['created_at'] = pd.to_datetime(customer_list['created_at']).dt.strftime('%Y-%m-%d')
+    cust_json = customer_list.to_json(orient='records')
+    
+    print(cust_json)
+    data = supabase.table('customers').insert(cust_json).execute()
+
+def add_pass(supabase):
+    
+    file = input('File path: ')
+    pass_list = pd.read_csv(file)
+    pass_json = loads(pass_list.to_json(orient='records'))
+    
+    data = supabase.table('passes').insert(pass_json).execute()
 
 if __name__ == "__main__":
+    
+    load_dotenv()
+    url: str = os.environ.get("SUPABASE_URL")
+    key: str = os.environ.get("SUPABASE_SECRET_KEY")
+    supabase: Client = create_client(url, key)
+
     print("Menu")
     print("1. Add customer data")
+    print("2. Add pass")
+
     task = int(input('Select: ' ))
+
     if task == 1:
-        customers()
+        add_to_customers(supabase)
+    elif task == 2:
+        add_pass(supabase)
