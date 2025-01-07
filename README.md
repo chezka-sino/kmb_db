@@ -79,11 +79,15 @@ Creating a database from Punchpass reports for analytics.
 ## Setup
 
 1. Create a `.env` file with your Supabase credentials:
+```
 SUPABASE_URL=your_supabase_url
 SUPABASE_SECRET_KEY=your_supabase_key
+```
 
 2. Run the application:
+```
 python src/main.py
+```
 
 ## Common Issues
 
