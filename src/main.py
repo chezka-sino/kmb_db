@@ -8,11 +8,19 @@ from json import loads
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
-def customers():
-    last_pull = datetime.strptime(input('Last pull date: '), '%Y-%m-%d').date()
+def customers(file_path, last_pull):
+    """
+    Process customer data from CSV file and filter by date range.
+    
+    Args:
+        file_path (str): Path to the CSV file containing customer data
+        last_pull (date): Date of last data pull to filter new records
+    
+    Returns:
+        DataFrame: Processed customer information filtered by date range
+    """
     yesterday = date.today() - timedelta(days=1)
-    file = input('File path: ')
-    data = pd.read_csv(file)
+    data = pd.read_csv(file_path)
 
     # renaming columns to match table
     data = data.rename(columns={
@@ -38,17 +46,36 @@ def customers():
     
     return cust_info
 
-def add_to_customers(supabase):
-    customer_list = customers()
+def add_to_customers(supabase, file_path, last_pull):
+    """
+    Add new customer records to the Supabase database.
+    
+    Args:
+        supabase (Client): Supabase client instance
+        file_path (str): Path to customer CSV file
+        last_pull (date): Date of last data pull
+    
+    Returns:
+        int: Number of records added
+    """
+    customer_list = customers(file_path, last_pull)
     customer_list['created_at'] = pd.to_datetime(customer_list['created_at']).dt.strftime('%m-%d-%Y')
     cust_json = loads(customer_list.to_json(orient='records'))
     
     data = supabase.table('customers').insert(cust_json).execute()
-    print('Added rows to customers', data.count)
+    return data.count
 
-def classes():
-    file = input('File path: ')
-    data = pd.read_csv(file)
+def classes(file_path):
+    """
+    Process class data from CSV file.
+    
+    Args:
+        file_path (str): Path to the CSV file containing class data
+    
+    Returns:
+        DataFrame: Processed class information
+    """
+    data = pd.read_csv(file_path)
 
     # renaming columns to match table
     data = data.rename(columns={
@@ -62,23 +89,52 @@ def classes():
 
     return class_info
 
-def add_class(supabase):
-    class_list = classes()
+def add_class(supabase, file_path):
+    """
+    Add class records to the Supabase database.
+    
+    Args:
+        supabase (Client): Supabase client instance
+        file_path (str): Path to class CSV file
+    
+    Returns:
+        int: Number of records added
+    """
+    class_list = classes(file_path)
     class_json = loads(class_list.to_json(orient='records'))
     
     data = supabase.table('classes').insert(class_json).execute()
+    return data.count
 
-def add_pass(supabase):
+def add_pass(supabase, file_path):
+    """
+    Add pass records to the Supabase database.
     
-    file = input('File path: ')
-    pass_list = pd.read_csv(file)
+    Args:
+        supabase (Client): Supabase client instance
+        file_path (str): Path to pass CSV file
+    
+    Returns:
+        int: Number of records added
+    """
+    pass_list = pd.read_csv(file_path)
     pass_json = loads(pass_list.to_json(orient='records'))
     
     data = supabase.table('passes').insert(pass_json).execute()
+    return data.count
 
-def purchases():
-    file = input('File path: ')
-    data = pd.read_csv(file)
+def purchases(file_path, supabase):
+    """
+    Process purchase data and merge with pass information.
+    
+    Args:
+        file_path (str): Path to the CSV file containing purchase data
+        supabase (Client): Supabase client instance
+    
+    Returns:
+        DataFrame: Processed and merged purchase information
+    """
+    data = pd.read_csv(file_path)
 
     data = data.rename(columns={
         'Customer ID': 'user_id',
@@ -100,16 +156,35 @@ def purchases():
 
     return merged_data
 
-def add_purchases(supabase):
-
-    purchase_list = purchases()
+def add_purchases(supabase, file_path):
+    """
+    Add purchase records to the Supabase database.
+    
+    Args:
+        supabase (Client): Supabase client instance
+        file_path (str): Path to purchase CSV file
+    
+    Returns:
+        int: Number of records added
+    """
+    purchase_list = purchases(file_path, supabase)
     purchase_json = loads(purchase_list.to_json(orient='records'))
     
     data = supabase.table('purchases').insert(purchase_json).execute()
+    return data.count
 
-def attendances():
-    file = input('File path: ')
-    raw = pd.read_csv(file)
+def attendances(file_path, supabase):
+    """
+    Process attendance data and merge with class and pass information.
+    
+    Args:
+        file_path (str): Path to the CSV file containing attendance data
+        supabase (Client): Supabase client instance
+    
+    Returns:
+        DataFrame: Processed and merged attendance information
+    """
+    raw = pd.read_csv(file_path)
 
     date_range_min = raw['Class Date'].min()
     date_range_max = raw['Class Date'].max()
@@ -158,35 +233,27 @@ def attendances():
 
     return merged_data[['user_id', 'class_id', 'purchase_pass', 'no_show']]
 
-def add_attendances(supabase):
-    attendance_list = attendances()
+def add_attendances(supabase, file_path):
+    """
+    Add attendance records to the Supabase database.
+    
+    Args:
+        supabase (Client): Supabase client instance
+        file_path (str): Path to attendance CSV file
+    
+    Returns:
+        int: Number of records added
+    """
+    attendance_list = attendances(file_path, supabase)
     attendance_json = loads(attendance_list.to_json(orient='records'))
     
     data = supabase.table('attendances').insert(attendance_json).execute()
+    return data.count
 
 if __name__ == "__main__":
+    from ui import DatabaseUI
+    import tkinter as tk
     
-    load_dotenv()
-    url: str = os.environ.get("SUPABASE_URL")
-    key: str = os.environ.get("SUPABASE_SECRET_KEY")
-    supabase: Client = create_client(url, key)
-
-    print("Menu")
-    print("1. Add customer data")
-    print("2. Add pass")
-    print("3. Add classes")
-    print("4. Add purchases")
-    print("5. Add attendances")
-
-    task = int(input('Select: ' ))
-
-    if task == 1:
-        add_to_customers(supabase)
-    elif task == 2:
-        add_pass(supabase)
-    elif task == 3:
-        add_class(supabase)
-    elif task == 4:
-        add_purchases(supabase)
-    elif task == 5:
-        add_attendances(supabase)
+    root = tk.Tk()
+    app = DatabaseUI(root)
+    root.mainloop()
