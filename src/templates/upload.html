@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="upload-form">
+    <h2>Upload {{ operation.title() }} Data</h2>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% if operation == 'customers' %}
+            <div class="form-group">
+                <label for="last_pull">Last Pull Date:</label>
+                <input type="date" id="last_pull" name="last_pull" required>
+            </div>
+        {% endif %}
+        
+        <div class="form-group">
+            <label for="file">Select CSV File:</label>
+            <input type="file" id="file" name="file" accept=".csv" required>
+        </div>
+        
+        <button type="submit" class="button">Upload</button>
+    </form>
+</div>
+{% endblock %} 

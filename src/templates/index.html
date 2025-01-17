@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="operations">
+    <h2>Select Operation</h2>
+    
+    <div class="operation-buttons">
+        <a href="{{ url_for('upload', operation='customers') }}" class="button">
+            Add Customer Data
+        </a>
+        
+        <a href="{{ url_for('upload', operation='passes') }}" class="button">
+            Add Pass
+        </a>
+        
+        <a href="{{ url_for('upload', operation='classes') }}" class="button">
+            Add Classes
+        </a>
+        
+        <a href="{{ url_for('upload', operation='purchases') }}" class="button">
+            Add Purchases
+        </a>
+        
+        <a href="{{ url_for('upload', operation='attendances') }}" class="button">
+            Add Attendances
+        </a>
+    </div>
+</div>
+{% endblock %} 
